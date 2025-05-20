@@ -57,10 +57,11 @@ export class AccountService {
       }
     });
 
-    return {
+  //  return true;
+  return {
       ...newUser,
       avatar: newUser.avatar || '',
       bio: newUser.bio || ''
-    };
+   }
   }
 }
