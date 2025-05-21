@@ -7,12 +7,12 @@ import { CreateUserInput } from './inputs/create-user.input';
 export class AccountResolver {
   public constructor(private readonly accountService: AccountService) {}
 
- @Query(() => [UserModel], { name: 'findAllUsers' })
+ @Query(() => [UserModel], { name: 'findAllUsers' }) // get
   public async findAll() {
     return this.accountService.findAll()
   }
 
-  @Mutation(() => Boolean, { name: 'createUser' })
+  @Mutation(() => Boolean, { name: 'createUser' }) // all others
   public async create(@Args('data') input: CreateUserInput) {
     return this.accountService.create(input);
   }
