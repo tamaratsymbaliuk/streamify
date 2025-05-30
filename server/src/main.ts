@@ -66,22 +66,24 @@ async function bootstrap() {
    */
   // Get the redis client instance from our custom RedisService (which extends ioredis)
   const redisClient = app.get(RedisService);
-  const store = new RedisStore({ client: redisClient });
+  const store = new RedisStore({ 
+    client: redisClient,
+    ttl: ms(config.getOrThrow<StringValue>('REDIS_TTL')) / 1000 // Convert ms to seconds for Redis TTL
+  });
   app.use(
     session({
       store,
       secret: config.getOrThrow<string>('SESSION_SECRET'), // Encrypt session data
       name: config.getOrThrow<string>('SESSION_NAME'), // Session cookie name
       resave: false, // Don't save session if nothing changed
-      saveUninitialized: false, // Don't save empty sessions
+      saveUninitialized: false, // Don't save empty sessions,
       cookie: {
         domain: config.getOrThrow<string>('SESSION_DOMAIN'),
         maxAge: ms(config.getOrThrow<StringValue>('SESSION_MAX_AGE')), // Lifetime of cookie
         httpOnly: parseBoolean(config.getOrThrow<string>('SESSION_HTTP_ONLY')), // Prevent client-side access to cookie
         secure: parseBoolean(config.getOrThrow<string>('SESSION_SECURE')), // Only send cookie over HTTPS
-        sameSite: config.getOrThrow<string>('SESSION_SAME_SITE'), // e.g., 'lax', 'strict', 'none'
-      },
-      ttl: ms(config.getOrThrow<StringValue>('REDIS_TTL')) // Time to live for Redis keys
+        sameSite: config.getOrThrow<string>('SESSION_SAME_SITE') as 'lax' | 'strict' | 'none', // e.g., 'lax', 'strict', 'none'
+      }
     })
   )
 
