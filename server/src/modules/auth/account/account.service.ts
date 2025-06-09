@@ -64,4 +64,14 @@ export class AccountService {
   //     bio: newUser.bio || ''
   //  }
   }
+
+  // Add this method to retrieve current user
+  public async me(id: string) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id,
+      },
+    })
+    return user
+  }
 }
