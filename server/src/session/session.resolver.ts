@@ -1,10 +1,12 @@
-import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
+import { Args, Context, Mutation, Query, Resolver, ObjectType, Field, InputType } from '@nestjs/graphql';
 import { SessionService } from './session.service';
 import { UserModel } from '../modules/auth/account/models/user.model';
 import type { GqlContext } from '../shared/types/gql-context.types';
-import { InputType, Field } from '@nestjs/graphql';
+import { Authorization } from '@/shared/decorators/auth.decorator';
+import { UserAgent } from '@/shared/decorators/user-agent.decorator';
+import { AuthModel } from '@/modules/auth/account/models/auth.modul';
 
-@InputType()
+@InputType() //  Input from client to server; Used with @Args() parameters
 export class LoginInput {
   @Field({ nullable: true })
   login?: string;
@@ -21,20 +23,16 @@ export class LoginInput {
 
 @Resolver(() => UserModel)
 export class SessionResolver {
-  constructor(private readonly sessionService: SessionService) {}
+  constructor(private readonly sessionService: SessionService) { }
 
-  @Mutation(() => UserModel)
-  async loginUser(
-    @Context() { req }: GqlContext,
-    @Args('data', { type: () => LoginInput }) data: LoginInput,
-  ) {
-    const user = await this.sessionService.login(req, data);
-    return {
-      ...user,
-      avatar: user.avatar || '',
-      bio: user.bio || '',
-    } as UserModel;
-  }
+  @Mutation(() => AuthModel, { name: 'loginUser' })
+	public async login(
+		@Context() { req }: GqlContext,
+		@Args('data') input: LoginInput,
+		@UserAgent() userAgent: string
+	) {
+		return this.sessionService.login(req, input, userAgent)
+	}
 
   @Mutation(() => Boolean)
   async logoutUser(@Context() { req, res }: GqlContext): Promise<boolean> {
@@ -42,4 +40,53 @@ export class SessionResolver {
     await this.sessionService.logout(requestWithRes);
     return true;
   }
+
+  @Authorization()
+  @Mutation(() => Boolean)
+  async removeSession(
+    @Context() { req }: GqlContext,
+    @Args('id') id: string
+  ): Promise<boolean> {
+    return this.sessionService.remove(req, id);
+  }
+
+  @Authorization()
+  @Query(() => [SessionModel])
+  async findSessionsByUser(@Context() { req }: GqlContext): Promise<SessionModel[]> {
+    return this.sessionService.findByUser(req);
+  }
+
+  @Authorization()
+  @Query(() => SessionModel)
+  async findCurrentSession(@Context() { req }: GqlContext): Promise<SessionModel> {
+    return this.sessionService.findCurrent(req);
+  }
+
+  @Authorization()
+  @Mutation(() => Boolean)
+  async clearSessionCookie(@Context() { req, res }: GqlContext): Promise<boolean> {
+    const requestWithRes = Object.assign(req, { res });
+    return this.sessionService.clearSession(requestWithRes);
+  }
+}
+
+@ObjectType() //  Output from server to client;  Used with @Query() and @Mutation() return types
+export class SessionModel {
+  @Field()
+  id: string;
+
+  @Field()
+  userId: string;
+
+  @Field()
+  userAgent: string;
+
+  @Field()
+  ip: string;
+
+  @Field()
+  createdAt: number;
+
+  @Field({ nullable: true })
+  lastActive?: number;
 }
