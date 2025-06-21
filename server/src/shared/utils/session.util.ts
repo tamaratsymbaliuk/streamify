@@ -5,14 +5,17 @@ import type { Request, Response } from 'express'
 import 'express-session'
 
 import type { User } from '../../../prisma/generated'
+import { SessionMetadata } from '../types/session-metadata.types'
 
 export function saveSession(
 	req: Request,
 	user: User,
+	metadata: SessionMetadata
 ) {
 	return new Promise((resolve, reject) => {
 		req.session.createdAt = new Date()
 		req.session.userId = user.id
+		req.session.metadata = metadata
 
 		req.session.save(err => {
 			if (err) {
