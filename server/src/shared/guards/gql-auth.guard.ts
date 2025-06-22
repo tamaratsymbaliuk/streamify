@@ -15,6 +15,8 @@ export class GqlAuthGuard implements CanActivate {
 		const ctx = GqlExecutionContext.create(context)
 		const request = ctx.getContext().req
 
+		console.log(request.session)
+
 		// ❗️Check if session userId exists
 		if (typeof request.session.userId === 'undefined') {
 			throw new UnauthorizedException('user is not authorized')
