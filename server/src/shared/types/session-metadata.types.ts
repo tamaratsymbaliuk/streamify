@@ -1,7 +1,9 @@
+import { MetadataBoundary } from "next/dist/server/app-render/entry-base"
+
 export interface LocationInfo {
 	country: string
 	city: string
-	latidute: number
+	latitude: number
 	longitude: number
 }
 
@@ -16,3 +18,4 @@ export interface SessionMetadata { // Hierarchical Structure where SessionMetada
 	device: DeviceInfo
 	ip: string
 }
+
