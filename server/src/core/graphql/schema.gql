@@ -2,6 +2,11 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type AuthModel {
+  message: String
+  user: UserModel
+}
+
 input CreateUserInput {
   email: String!
   password: String!
@@ -21,13 +26,27 @@ input LoginInput {
 }
 
 type Mutation {
+  clearSessionCookie: Boolean!
   createUser(data: CreateUserInput!): Boolean!
-  loginUser(data: LoginInput!): UserModel!
+  loginUser(data: LoginInput!): AuthModel!
   logoutUser: Boolean!
+  removeSession(id: String!): Boolean!
 }
 
 type Query {
   findAllUsers: [UserModel!]!
+  findCurrentSession: SessionModel!
+  findProfile: UserModel!
+  findSessionsByUser: [SessionModel!]!
+}
+
+type SessionModel {
+  createdAt: Float!
+  id: String!
+  ip: String!
+  lastActive: Float
+  userAgent: String!
+  userId: String!
 }
 
 type UserModel {
