@@ -19,10 +19,31 @@ export class UserModel implements User {
   public displayName: string
 
   @Field(() => String, { nullable: true })
-  public avatar: string
+  public avatar: string | null
 
   @Field(() => String, { nullable: true })
-  public bio: string
+  public bio: string | null
+
+  @Field(() => String, { nullable: true })
+  public telegramId: string | null
+
+  @Field(() => Boolean)
+  public isVerified: boolean
+
+  @Field(() => Boolean)
+  public isEmailVerified: boolean
+
+  @Field(() => Boolean)
+  public isTotpEnabled: boolean
+
+  @Field(() => String, { nullable: true })
+  public totpSecret: string | null
+
+  @Field(() => Boolean)
+  public isDeactivated: boolean
+
+  @Field(() => Date, { nullable: true })
+  public deactivatedAt: Date | null
 
   @Field(() => Date)
   public createdAt: Date
