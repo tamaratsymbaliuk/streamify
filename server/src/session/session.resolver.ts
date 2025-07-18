@@ -1,4 +1,5 @@
 import { Args, Context, Mutation, Query, Resolver, ObjectType, Field, InputType } from '@nestjs/graphql';
+import type { Request, Response } from 'express';
 import { SessionService } from './session.service';
 import { UserModel } from '../modules/auth/account/models/user.model';
 import type { GqlContext } from '../shared/types/gql-context.types';
@@ -26,48 +27,52 @@ export class SessionResolver {
   constructor(private readonly sessionService: SessionService) { }
 
   @Mutation(() => AuthModel, { name: 'loginUser' })
-	public async login(
-		@Context() { req }: GqlContext,
-		@Args('data') input: LoginInput,
-		@UserAgent() userAgent: string
-	) {
-		return this.sessionService.login(req, input, userAgent)
-	}
-
-  @Mutation(() => Boolean)
-  async logoutUser(@Context() { req, res }: GqlContext): Promise<boolean> {
-    const requestWithRes = Object.assign(req, { res });
-    await this.sessionService.logout(requestWithRes);
-    return true;
-  }
-
-  @Authorization()
-  @Mutation(() => Boolean)
-  async removeSession(
+  public async login(
     @Context() { req }: GqlContext,
-    @Args('id') id: string
-  ): Promise<boolean> {
-    return this.sessionService.remove(req, id);
+    @Args('data') input: LoginInput,
+    @UserAgent() userAgent: string
+  ) {
+    return this.sessionService.login(req, input, userAgent)
   }
 
   @Authorization()
-  @Query(() => [SessionModel])
-  async findSessionsByUser(@Context() { req }: GqlContext): Promise<SessionModel[]> {
-    return this.sessionService.findByUser(req);
+  @Mutation(() => Boolean, { name: 'logoutUser' })
+  logout(@Context() { req, res }: GqlContext) {
+    return this.sessionService.logout(Object.assign(req, { res }))
   }
 
   @Authorization()
-  @Query(() => SessionModel)
-  async findCurrentSession(@Context() { req }: GqlContext): Promise<SessionModel> {
-    return this.sessionService.findCurrent(req);
+  @Mutation(() => Boolean, { name: 'removeSession' })
+  remove(@Context() { req }: GqlContext, @Args('id') id: string) {
+    return this.sessionService.remove(req, id)
   }
 
   @Authorization()
-  @Mutation(() => Boolean)
-  async clearSessionCookie(@Context() { req, res }: GqlContext): Promise<boolean> {
-    const requestWithRes = Object.assign(req, { res });
-    return this.sessionService.clearSession(requestWithRes);
+  @Query(() => [SessionModel], { name: 'findSessionsByUser' })
+  findByUser(@Context() { req }: GqlContext) {
+    return this.sessionService.findByUser(req)
   }
+
+  @Authorization()
+  @Query(() => SessionModel, { name: 'findCurrentSession' })
+  findCurrent(@Context() { req }: GqlContext) {
+    return this.sessionService.findCurrent(req)
+  }
+
+  @Mutation(() => Boolean, { name: 'clearSessionCookie' })
+  clearSession(@Context() { req, res }: GqlContext) {
+    // Instead of trying to combine objects, pass req and res separately to a wrapper method
+    return this.clearSessionWrapper(req, res);
+  }
+
+  // Helper method to handle the type requirements
+  private clearSessionWrapper(req: Request, res: Response): Promise<boolean> {
+    // TypeScript sees this as a valid cast because we're creating a new object
+    const reqWithRes = { ...req, res } as unknown as Request & { res: Response };
+    return this.sessionService.clearSession(reqWithRes);
+  }
+
+
 }
 
 @ObjectType() //  Output from server to client;  Used with @Query() and @Mutation() return types
@@ -90,3 +95,4 @@ export class SessionModel {
   @Field({ nullable: true })
   lastActive?: number;
 }
+
