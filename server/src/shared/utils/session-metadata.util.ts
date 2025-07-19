@@ -41,7 +41,7 @@ export function getSessionMetadata(req: Request, userAgent: string): SessionMeta
 			// Fallback to "Неизвестно" if city not available
 			city: location?.city || 'Невідомо',
 			// Latitude & longitude from GeoIP data or fallback to 0
-			latidute: location?.ll?.[0] || 0,
+			latitude: location?.ll?.[0] || 0,
 			longitude: location?.ll?.[1] || 0
 		},
 		device: {
