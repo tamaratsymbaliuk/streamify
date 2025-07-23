@@ -3,10 +3,13 @@ import * as bcrypt from 'bcrypt';
 import { UserModel } from './models/user.model';
 import { PrismaService } from '../../../core/prisma/prisma.service';
 import { CreateUserInput } from './inputs/create-user.input';
+import { VerificationService } from '../verification/verification.service';
 
 @Injectable()
 export class AccountService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService,
+              private readonly verificationService: VerificationService
+    ) {}
 
   async findAll(): Promise<UserModel[]> {
     const users = await this.prisma.user.findMany({
@@ -56,6 +59,8 @@ export class AccountService {
         displayName: username
       }
     });
+
+    await this.verificationService.sendVerificationToken(newUser)
 
   return true;
   // return {
