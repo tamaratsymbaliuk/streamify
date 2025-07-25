@@ -19,7 +19,7 @@ import { VerificationInput } from './inputs/verification.input'
 export class VerificationService {
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly mailSerivce: MailService
+    private readonly mailService: MailService
   ) {}
 
   async verify(req: Request, input: VerificationInput, userAgent: string) {
@@ -47,7 +47,7 @@ export class VerificationService {
 
   async sendVerificationToken(user: User) {
     const verificationToken = await generateToken(this.prismaService, user, TokenType.EMAIL_VERIFY)
-    await this.mailSerivce.sendVerificationToken(user.email, verificationToken.token)
+    await this.mailService.sendVerificationToken(user.email, verificationToken.token)
     return true
   }
 }
