@@ -50,6 +50,6 @@ export function getSessionMetadata(req: Request, userAgent: string): SessionMeta
 			os: device?.os?.name || 'Unknown',
 			type: device?.device?.type || 'Unknown'
 		},
-		ip: ip || 'Unknown' // Store original IP string with fallback to ensure it's never undefined
+		ip: ip || 'Unknown' // Use logical OR to ensure only falsy values (null/undefined/empty string) are replaced
 	}
 }
